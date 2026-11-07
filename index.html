@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Subway Surfers 2D - Arcade Web Edition</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛹</text></svg>">
+</head>
+<body>
+
+  <div id="gameContainer">
+    <!-- Main Render Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- In-Game HUD -->
+    <div id="hud">
+      <div class="hud-left">
+        <!-- Coins -->
+        <div class="hud-pill">
+          <span class="hud-icon">🪙</span>
+          <span id="coinsValue" class="hud-value coins-val">0</span>
+        </div>
+
+        <!-- Score & High Score -->
+        <div class="hud-pill score-box">
+          <span id="scoreValue" class="score-val">0</span>
+          <span class="highscore-lbl">BEST: <span id="highScoreValue">0</span></span>
+        </div>
+
+        <!-- Active Power-up Progress Bars -->
+        <div id="powerupBars"></div>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-buttons">
+          <div id="multiplierValue" class="multiplier-badge">1X</div>
+          <button id="btnMute" class="hud-btn" title="Toggle Sound (M)">🔊</button>
+          <button id="btnPause" class="hud-btn" title="Pause Game (P / Esc)">⏸️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hoverboard Quick Trigger Button -->
+    <div class="board-btn-container">
+      <button id="btnHoverboard" class="btn-hoverboard-launch" title="Double tap / Space to Activate Board">
+        <span style="font-size: 28px">🛹</span>
+        <span id="boardCountBadge" class="board-count-badge">3</span>
+      </button>
+    </div>
+
+    <!-- On-Screen Touch / Click Controls (Left, Right, Jump, Slide) -->
+    <div id="touchControls">
+      <div class="touch-cluster">
+        <button id="btnLeft" class="touch-btn" title="Move Left (← / A)">◀</button>
+        <button id="btnRight" class="touch-btn" title="Move Right (→ / D)">▶</button>
+      </div>
+      <div class="touch-cluster">
+        <button id="btnJump" class="touch-btn" title="Jump (↑ / W)">▲</button>
+        <button id="btnSlide" class="touch-btn" title="Slide / Roll (↓ / S)">▼</button>
+      </div>
+    </div>
+
+    <!-- Start / Title Screen Overlay -->
+    <div id="startScreen" class="overlay-screen">
+      <div class="game-logo">
+        <div class="logo-line1">SUBWAY</div>
+        <div class="logo-line2">SURFERS</div>
+        <div class="badge-2d">★ 2D ARCADE ★</div>
+      </div>
+
+      <button id="btnStartGame" class="btn-primary">SURF THE TRACKS!</button>
+
+      <div class="menu-actions-row">
+        <button id="btnOpenShop" class="btn-secondary">
+          <span>🛍️</span> SHOP & UPGRADES
+        </button>
+        <button id="btnOpenMissions" class="btn-secondary">
+          <span>🎯</span> MISSIONS
+        </button>
+      </div>
+
+      <div class="controls-hint">
+        🎮 <b>Controls:</b> Arrow Keys or <b>W A S D</b> to Move, Jump &amp; Slide | <b>Space:</b> Hoverboard | Swipe on Mobile
+      </div>
+    </div>
+
+    <!-- Pause Screen Overlay -->
+    <div id="pauseScreen" class="overlay-screen hidden">
+      <div class="gameover-box">
+        <div class="gameover-title" style="color: #00e5ff">GAME PAUSED</div>
+        <p style="margin-bottom: 24px; color: rgba(255,255,255,0.7)">Take a breath, runner!</p>
+
+        <button id="btnResumeGame" class="btn-primary" style="width: 100%; margin-bottom: 12px">RESUME RUN</button>
+        <button id="btnPauseQuit" class="btn-secondary" style="width: 100%; justify-content: center">QUIT TO MENU</button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen Overlay -->
+    <div id="gameOverScreen" class="overlay-screen hidden">
+      <div class="gameover-box">
+        <div class="gameover-title">BUSTED!</div>
+        <div id="newBestBadge" class="new-best-badge hidden">🏆 NEW HIGH SCORE!</div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-lbl">FINAL SCORE</div>
+            <div id="finalScore" class="stat-val" style="color: #00ff87">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">COINS EARNED</div>
+            <div id="finalCoins" class="stat-val" style="color: #ffd700">0</div>
+          </div>
+          <div class="stat-card" style="grid-column: span 2">
+            <div class="stat-lbl">DISTANCE TRAVELED</div>
+            <div id="finalDistance" class="stat-val" style="color: #00e5ff">0m</div>
+          </div>
+        </div>
+
+        <button id="btnRestartGame" class="btn-primary" style="width: 100%; margin-bottom: 12px">RUN AGAIN!</button>
+        <button id="btnQuitToMenu" class="btn-secondary" style="width: 100%; justify-content: center">MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- Shop & Upgrades Modal -->
+    <div id="shopModal" class="overlay-screen hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">SUBWAY SHOP</div>
+          <div class="modal-wallet">🪙 <span id="shopCoins">0</span></div>
+          <button id="btnCloseShop" class="btn-close-modal">✖</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Buy Hoverboards Banner -->
+          <div style="background: linear-gradient(135deg, #ff00aa, #3a1c71); border-radius: 16px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px">
+            <div>
+              <div style="font-size: 18px; font-weight: 900">🛹 3x Hoverboard Pack</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.8)">Crash shield &amp; high speed surfing</div>
+            </div>
+            <button id="btnBuyBoardPack" class="btn-shop-action btn-buy" style="width: auto; padding: 8px 18px">
+              BUY 🪙 250
+            </button>
+          </div>
+
+          <!-- Characters -->
+          <div class="shop-section-title">🏃 Runners</div>
+          <div id="shopCharactersGrid" class="shop-grid"></div>
+
+          <!-- Hoverboards -->
+          <div class="shop-section-title">🛹 Hoverboard Styles</div>
+          <div id="shopBoardsGrid" class="shop-grid"></div>
+
+          <!-- Power-up Upgrades -->
+          <div class="shop-section-title">⚡ Power-Up Duration Upgrades</div>
+          <div id="shopUpgradesGrid" class="upgrades-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Missions Modal -->
+    <div id="missionsModal" class="overlay-screen hidden">
+      <div class="modal-content" style="max-width: 520px">
+        <div class="modal-header">
+          <div class="modal-title">TARGET MISSIONS</div>
+          <button id="btnCloseMissions" class="btn-close-modal">✖</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 16px; color: rgba(255,255,255,0.7); font-size: 13px">
+            Complete active challenges during runs to earn massive coin bounties!
+          </p>
+          <div id="missionsList" class="missions-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Scripts in Execution Order -->
+  <script src="js/constants.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/inspector.js"></script>
+  <script src="js/track.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
+
